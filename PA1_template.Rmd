@@ -27,7 +27,7 @@ Change class for the date variable
 activity$date <- as.Date(activity$date)
 ```
 
-## What is mean total number of steps taken per day?
+## What is mean/median total number of steps taken per day?
 Summarize the data by day, and calculate mean and median
 ```{r simulate data, echo=TRUE}
 daily_activity <- aggregate(formula = steps~date, data=activity, FUN = sum, na.rm=TRUE)
@@ -37,6 +37,8 @@ Calculate summary statistics
 mean_steps <- round(mean(daily_activity$steps),2)
 median_steps <- quantile(x = daily_activity$steps, probs = 0.5) 
 ```
+The mean is `r mean_steps` and median is `r median_steps`.
+
 Plot a histogram of the total number of steps per day
 ```{r simulate data, echo=TRUE}
 histogram <- qplot(x=steps, data=daily_activity) + 
@@ -56,6 +58,8 @@ Get the data for the interval with the most average activity across the days
 ```{r simulate data, echo=TRUE}
 max_steps <- interval_activity[which(interval_activity$steps==max(interval_activity$steps)),]
 ```
+The interval labeled `r max_steps` contains the maximum number of steps averaged across all the days.
+
 Function to calculate the mean and normal
 95% confidence interval around it
 ```{r simulate data, echo=TRUE}
@@ -125,6 +129,9 @@ Calculate summary statistics
 mean_imputed_steps <- round(mean(daily_imputed_activity$steps),2)
 median_imputed_steps <- quantile(x = daily_imputed_activity$steps, probs = 0.5)
 ```
+Mean after populate missing value is `r mean_imputed_steps`.
+Median after populate missing value is `r median_imputed_steps`.
+
 Replace the data in the original histogram with the imputed data
 ```{r simulate data, echo=TRUE}
 histogram %+% daily_imputed_activity
@@ -141,3 +148,6 @@ Plot the average steps per interval, given the week_part
 ```{r simulate data, echo=TRUE}
 steps_per_interval %+% imputed_activity + facet_grid(week_part~.)
 ```
+
+## Conclusion
+Activity on the weekday has the greatest peak from all steps intervals and that weekend's activities has more peaks over a hundred steps than weekdays.On the other hand, at weekend we can see a more regular distribution of effort/activities along the day.
