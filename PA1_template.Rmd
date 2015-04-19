@@ -38,7 +38,7 @@ mean_steps <- round(mean(daily_activity$steps),2)
 median_steps <- quantile(x = daily_activity$steps, probs = 0.5) 
 ```
 Plot a histogram of the total number of steps per day
-```{r simulate data, echo=TRUE}
+```{r scatterplot, fig.height=4}
 histogram <- qplot(x=steps, data=daily_activity) + 
   labs(y='Count of each total steps per day', x='Number of steps')
 plot(histogram)
@@ -70,7 +70,7 @@ Plot the average number of steps per interval
 Use ggplot2 to summarize the data, to 
 find inconsistencies with the analysis.
 Geom 'line' is equivalent to 'type="l"' in plot.
-```{r simulate data, echo=TRUE}
+```{r scatterplot, fig.height=4}
 steps_per_interval <- 
   qplot(x=interval, y=steps,
         data=subset(activity, complete.cases(activity)),
@@ -126,7 +126,7 @@ mean_imputed_steps <- round(mean(daily_imputed_activity$steps),2)
 median_imputed_steps <- quantile(x = daily_imputed_activity$steps, probs = 0.5)
 ```
 Replace the data in the original histogram with the imputed data
-```{r simulate data, echo=TRUE}
+```{r scatterplot, fig.height=4}
 histogram %+% daily_imputed_activity
 ```
 
@@ -138,6 +138,6 @@ imputed_activity$week_part <- factor(
          'weekday', 'weekend'))
 ```
 Plot the average steps per interval, given the week_part
-```{r simulate data, echo=TRUE}
+```{r scatterplot, fig.height=4}
 steps_per_interval %+% imputed_activity + facet_grid(week_part~.)
 ```
