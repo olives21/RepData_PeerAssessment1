@@ -5,50 +5,76 @@ output:
     keep_md: true
 ---
 
+## Summary
+This document presents the results of the Reproducible Research Peer Assessment 1 in a report using knitr and transforming an R Markdown document into an HTML file.
+
+Through this report you can see that activities on weekdays mostly follow a work related routine with a pronounced peak maybe related to a sport routine, and a more regular distribution of activity on weekends.
+
+## Prepare the environment and define some options for knitr
+```{r simulate data, echo=TRUE}
+library(knitr)
+
+knitr::opts_chunk$set(tidy=FALSE, fig.path='figures/')
+```
 
 ## Loading and preprocessing the data
-# Load provided data (use relative paths)
+Load provided data (use relative paths)
+```{r simulate data, echo=TRUE}
+
 activity <- read.csv(file = './data/activity.csv', stringsAsFactors = FALSE)
 
-# Change class for the date variable
+Change class for the date variable
 activity$date <- as.Date(activity$date)
+```
 
+## What is mean/median total number of steps taken per day?
+Summarize the data by day, and calculate mean and median
+```{r simulate data, echo=TRUE}
+daily_activity <- aggregate(formula = steps~date, data=activity, FUN = sum, na.rm=TRUE)
+```
+Calculate summary statistics
+```{r simulate data, echo=TRUE}
+mean_steps <- round(mean(daily_activity$steps),2)
+median_steps <- quantile(x = daily_activity$steps, probs = 0.5) 
+```
+The mean is `r mean_steps` and median is `r median_steps`.
 
-## What is mean total number of steps taken per day?
-#Summarize the data by day
-daily_activity <- aggregate(formula = steps~date, data=activity, 
-                            FUN = sum, na.rm=TRUE)
-# Calculate summary statistics
-mean_steps <- round(mean(daily_activity$steps),2) #Mean
-median_steps <- quantile(x = daily_activity$steps, probs = 0.5) #Median, 50%Q
-
-# Plot a histogram of the total number of steps per day.
+Plot a histogram of the total number of steps per day
+```{r simulate data, echo=TRUE}
 histogram <- qplot(x=steps, data=daily_activity) + 
   labs(y='Count of each total steps per day', x='Number of steps')
 plot(histogram)
-
+```
 
 ## What is the average daily activity pattern?
-# Aggregate the steps per interval, calculating the mean across the days
+Aggregate the steps per interval, calculating the mean across the days
+```{r simulate data, echo=TRUE}
 interval_activity <- 
   aggregate(formula=steps~interval, data=activity,
             FUN=mean, na.rm=TRUE)
-# Get the data for the interval with the most average activity across the days
-max_steps <- interval_activity[which(interval_activity$steps==max(interval_activity$steps)),]
+```
 
-# Function to calculate the mean and normal
-# 95% confidence interval around it
+Get the data for the interval with the most average activity across the days
+```{r simulate data, echo=TRUE}
+max_steps <- interval_activity[which(interval_activity$steps==max(interval_activity$steps)),]
+```
+The interval labeled `r max_steps` contains the maximum number of steps averaged across all the days.
+
+Function to calculate the mean and normal
+95% confidence interval around it
+```{r simulate data, echo=TRUE}
 mean_ci <- function(data){
   m <- mean(data)
   data.frame(y=m,
              ymin = m-(1.96*sd(data)/sqrt(length(data))),
              ymax = m+(1.96*sd(data)/sqrt(length(data))))
 }
-
-# Plot the average number of steps per interval
-# Use ggplot2 to summarize the data, to 
-# find inconsistencies with the analysis.
-# Geom 'line' is equivalent to 'type="l"' in plot.
+```
+Plot the average number of steps per interval
+Use ggplot2 to summarize the data, to 
+find inconsistencies with the analysis.
+Geom 'line' is equivalent to 'type="l"' in plot.
+```{r simulate data, echo=TRUE}
 steps_per_interval <- 
   qplot(x=interval, y=steps,
         data=subset(activity, complete.cases(activity)),
@@ -56,54 +82,72 @@ steps_per_interval <-
   labs(y='Average steps per interval', x='Interval')
 
 steps_per_interval
-
+```
 
 ## Imputing missing values
-# Count the number of NAs
-total_NAs <- sum(!complete.cases(activity))
-step_NAs <- sum(is.na(activity$steps))
+Count the number of NAs. Missing data needs to be imputed. Only a simple imputation approach was required for this assignment. Missing values were imputed by inserting the average for each interval. Thus, the average replaces NA's in the data.
 
-# Calculating the number of missing dates
+```{r simulate data, echo=TRUE}total_NAs <- sum(!complete.cases(activity))
+step_NAs <- sum(is.na(activity$steps))
+```
+Calculating the number of missing dates
+```{r simulate data, echo=TRUE}
 dates_in_range <- seq.Date(from = min(activity$date),
                            to = max(activity$date),
                            by='1 day')
 date_NAs <- sum(!activity$date[complete.cases(activity)] %in% dates_in_range)
+```
 
-# Imputation strategy
-# Use previously calculated means
+Imputation strategy - Use previously calculated means
+```{r simulate data, echo=TRUE}
 interval_activity$imputed_steps <- floor(interval_activity$steps)
-
-#Merge the replacement values
+```
+Merge the replacement values
+```{r simulate data, echo=TRUE}
 imputed_activity <- merge(activity,
                           interval_activity[,c('interval', 'imputed_steps')],
                           by='interval')
-
-# Replace the missing values
+```
+Replace the missing values
+```{r simulate data, echo=TRUE}
 imputed_activity$steps <- ifelse(is.na(imputed_activity$steps),
                                  imputed_activity$imputed_steps,
                                  imputed_activity$steps)
-
-# Remove unneccessary data
+```
+Remove unneccessary data
+```{r simulate data, echo=TRUE}
 imputed_activity$imputed_steps <- NULL
-
-# Summarize the data by day
+```
+Summarize the data by day
+```{r simulate data, echo=TRUE}
 daily_imputed_activity <-
   aggregate(formula = steps~date, data = imputed_activity,
             FUN = sum, na.rm=TRUE)
-
-#calculate summary statistics
+```
+Calculate summary statistics
+```{r simulate data, echo=TRUE}
 mean_imputed_steps <- round(mean(daily_imputed_activity$steps),2)
 median_imputed_steps <- quantile(x = daily_imputed_activity$steps, probs = 0.5)
+```
+Mean after populate missing value is `r mean_imputed_steps`.
+Median after populate missing value is `r median_imputed_steps`.
 
-#Replace the data in the original histogram with the imputed data
+Replace the data in the original histogram with the imputed data
+```{r simulate data, echo=TRUE}
 histogram %+% daily_imputed_activity
-
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
-#Label each date as weekday/weekend(1:5 are weekdays, 6:7 are weekends)
+Label each date as weekday/weekend(1:5 are weekdays, 6:7 are weekends)
+```{r simulate data, echo=TRUE}
 imputed_activity$week_part <- factor(
   ifelse(as.integer(format(imputed_activity$date, format = '%u')) %in% c(1:5),
          'weekday', 'weekend'))
-
-# Plot the average steps per interval, given the week_part
+```
+Plot the average steps per interval, given the week_part
+```{r simulate data, echo=TRUE}
 steps_per_interval %+% imputed_activity + facet_grid(week_part~.)
+```
+
+## Conclusion
+Activity on the weekday has the greatest peak from all steps intervals and that weekend's activities has more peaks over a hundred steps than weekdays.On the other hand, at weekend we can see a more regular distribution of effort/activities along the day.
